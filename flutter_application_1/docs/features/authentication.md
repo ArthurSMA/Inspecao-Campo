@@ -181,24 +181,22 @@ Atualmente, apenas o campo `accessToken` é armazenado.
 
 ---
 
-## Limitações atuais
+## Proteção da sessão e logout
 
-Atualmente ainda não existem:
+Ao iniciar, o `AuthGate` lê o token seguro e o valida com `GET /auth/me`.
+A `HomePage` só é construída depois de uma validação bem-sucedida. Tokens
+inválidos ou expirados (HTTP 401) são removidos e o login é exibido.
 
-- proteção de rotas;
-- logout;
-- renovação automática do token;
-- interceptadores do Dio;
-- testes unitários;
-- persistência da sessão após o fechamento do aplicativo.
+O mock não oferece endpoint de logout. Por isso, a saída é local: a ação
+visível na `HomePage` remove o token e faz o `AuthGate` reconstruir o login,
+sem manter uma tela autenticada na pilha de navegação.
 
----
+O campo `role` é convertido e preservado no modelo, mas não altera o fluxo,
+pois o desafio não exige autorização por perfil.
 
-## Próximos passos
+## Limitações fora do requisito obrigatório
 
-- validar a sessão utilizando `GET /auth/me`;
-- implementar o logout;
-- adicionar interceptadores;
-- proteger as rotas autenticadas;
-- implementar testes unitários;
-- adicionar gerenciamento de estado.
+- não há renovação automática do token;
+- não há interceptador global do Dio;
+- uma indisponibilidade da API impede a abertura da área interna até que a
+  sessão possa ser validada novamente.

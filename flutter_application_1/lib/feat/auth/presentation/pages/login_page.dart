@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/feat/auth/data/models/login_response.dart';
 import 'package:flutter_application_1/feat/auth/presentation/widgets/login_form.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, required this.onLogin});
+
+  final ValueChanged<AuthUser> onLogin;
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(24),
@@ -28,7 +31,7 @@ class LoginPage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 32),
-              LoginForm(),
+              LoginForm(onLogin: onLogin),
             ],
           ),
         ),

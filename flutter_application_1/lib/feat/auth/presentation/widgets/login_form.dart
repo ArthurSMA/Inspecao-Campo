@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/core/network/api_client.dart';
 import 'package:flutter_application_1/core/storage/token_storage.dart';
+import 'package:flutter_application_1/feat/auth/data/models/login_response.dart';
 import 'package:flutter_application_1/feat/auth/data/services/auth_service.dart';
-import 'package:flutter_application_1/feat/home/presentation/pages/home_page.dart';
 
 class LoginForm extends StatefulWidget {
-  const LoginForm({super.key});
+  const LoginForm({super.key, required this.onLogin});
+
+  final ValueChanged<AuthUser> onLogin;
 
   @override
   State<LoginForm> createState() => _LoginFormState();
@@ -59,27 +61,17 @@ class _LoginFormState extends State<LoginForm> {
 
       await _tokenStorage.saveToken(loginResponse.accessToken);
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => HomePage(userName: loginResponse.user.name),
-        ),
-      );
+      widget.onLogin(loginResponse.user);
     } on AuthException catch (error) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setState(() {
         _errorMessage = error.message;
       });
     } catch (_) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setState(() {
         _errorMessage = 'Ocorreu um erro inesperado.';
@@ -164,6 +156,9 @@ class _LoginFormState extends State<LoginForm> {
           SizedBox(
             height: 48,
             child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 0, 48, 99),
+              ),
               onPressed: _isLoading ? null : _submit,
               child: _isLoading
                   ? const SizedBox(
@@ -171,7 +166,14 @@ class _LoginFormState extends State<LoginForm> {
                       height: 22,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Entrar'),
+                  : const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Entrar'),
+                        SizedBox(width: 8),
+                        Icon(Icons.arrow_forward),
+                      ],
+                    ),
             ),
           ),
         ],
