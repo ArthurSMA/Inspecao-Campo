@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/network/api_client.dart';
 import 'package:flutter_application_1/core/storage/token_storage.dart';
 import 'package:flutter_application_1/feat/auth/data/models/login_response.dart';
-import 'package:flutter_application_1/feat/auth/data/services/auth_service.dart';
+import 'package:flutter_application_1/feat/auth/services/auth_service.dart';
 import 'package:flutter_application_1/feat/auth/presentation/pages/login_page.dart';
 import 'package:flutter_application_1/feat/home/presentation/pages/home_page.dart';
 
@@ -118,7 +118,10 @@ class _AuthGateState extends State<AuthGate> {
 
   Future<void> _logout() async {
     await _tokenStorage.deleteToken();
-    if (mounted) setState(() => _user = null);
+    if (!mounted) return;
+
+    setState(() => _user = null);
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override

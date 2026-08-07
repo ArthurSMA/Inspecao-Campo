@@ -6,7 +6,9 @@ import 'package:flutter_application_1/core/storage/token_storage.dart';
 import 'package:flutter_application_1/feat/home/data/models/home_availability.dart';
 import 'package:flutter_application_1/feat/home/data/models/home_summary.dart';
 import 'package:flutter_application_1/feat/home/presentation/widgets/home_dashboard.dart';
-import 'package:flutter_application_1/feat/work_orders/data/services/work_order_service.dart';
+import 'package:flutter_application_1/feat/work_orders/services/work_order_service.dart';
+import 'package:flutter_application_1/feat/work_orders/presentation/pages/work_orders_page.dart';
+import 'package:flutter_application_1/shared/widgets/app_navigation_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -123,6 +125,19 @@ class _HomePageState extends State<HomePage> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  void _goToWorkOrders() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WorkOrdersPage(
+          userName: widget.userName,
+          onLogout: widget.onLogout,
+          onSessionInvalid: widget.onSessionInvalid,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,7 +145,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
-        elevation: 1,
+        elevation: 0,
         shadowColor: Colors.black12,
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -160,9 +175,7 @@ class _HomePageState extends State<HomePage> {
               isLoading: _isLoading,
               errorMessage: _errorMessage,
               onRetry: _loadSummary,
-              onViewOrders: () => _showUnavailable(
-                'A lista de ordens ainda não está disponível.',
-              ),
+              onViewOrders: _goToWorkOrders,
               onPendingInspections: () =>
                   _showUnavailable('As inspeções ainda não estão disponíveis.'),
               onFailedSyncs: () => _showUnavailable(
@@ -173,32 +186,17 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: AppNavigationBar(
         selectedIndex: 0,
         onDestinationSelected: (index) {
+          if (index == 0) return;
           if (index == 1) {
-            _showUnavailable('A página de ordens ainda não está disponível.');
-          } else if (index == 2) {
+            _goToWorkOrders();
+          }
+          if (index == 2) {
             _showUnavailable('O histórico ainda não está disponível.');
           }
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Início',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.assignment_outlined),
-            selectedIcon: Icon(Icons.assignment),
-            label: 'Ordens',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.history_outlined),
-            selectedIcon: Icon(Icons.history),
-            label: 'Histórico',
-          ),
-        ],
       ),
     );
   }

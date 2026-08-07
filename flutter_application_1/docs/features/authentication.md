@@ -52,12 +52,10 @@ HomePage
 feat/
 ├── auth/
 │   ├── data/
-│   │   ├── models/
-│   │   │   └── login_response.dart
-│   │   │
-│   │   └── services/
-│   │       └── auth_service.dart
-│   │
+│   │   └── models/
+│   │       └── login_response.dart
+│   ├── services/
+│   │   └── auth_service.dart
 │   └── presentation/
 │       ├── pages/
 │       │   └── login_page.dart

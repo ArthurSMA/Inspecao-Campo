@@ -2,9 +2,9 @@
 
 Aplicativo mobile desenvolvido em Flutter para auxiliar técnicos em atividades de inspeção e operação em campo.
 
-O projeto simula um ambiente no qual profissionais precisam consultar ordens de serviço, registrar evidências, trabalhar sem conexão com a internet e sincronizar as informações posteriormente.
-
-O foco principal do desafio está na arquitetura da aplicação, na persistência local e na sincronização offline.
+O projeto simula um ambiente no qual profissionais consultam ordens de serviço.
+Registro de evidências, persistência local e sincronização fazem parte da evolução
+planejada, mas ainda não estão implementados.
 
 ---
 
@@ -12,12 +12,8 @@ O foco principal do desafio está na arquitetura da aplicação, na persistênci
 
 - Autenticação de usuários;
 - Consulta de ordens de serviço;
-- Registro de inspeções;
-- Captura de fotos;
-- Captura de localização GPS;
-- Persistência local;
-- Sincronização automática e manual;
-- Histórico de inspeções.
+- Resumo de ordens abertas na Home;
+- Tratamento de sessão, conectividade e erros da API.
 
 ---
 
@@ -37,11 +33,8 @@ lib/
 ├── feat/
 │   ├── auth/
 │   ├── home/
-│   ├── work_orders/
-│   ├── inspections/
-│   ├── history/
-│   └── sync/
-│
+│   └── work_orders/
+├── shared/
 └── main.dart
 ```
 
@@ -123,19 +116,17 @@ flutter run
 
 ```text
 docs/
-├── architecture/
-│   └── architecture.md
-│
 └── features/
     ├── authentication.md
-    └── home.md
+    ├── home.md
+    └── work_orders.md
 ```
 
 | Documento | Descrição |
 |---|---|
-| `architecture.md` | Arquitetura do projeto |
 | `authentication.md` | Fluxo de login e autenticação |
 | `home.md` | Painel inicial, resumo de ordens e estados da interface |
+| `work_orders.md` | Listagem, filtros e representação das ordens |
 | `CONTRATO_API.md` | Contrato da API |
 | `DESAFIO_CANDIDATO.md` | Especificação do desafio |
 
@@ -153,11 +144,11 @@ docs/
 - [x] Proteção de rotas
 - [x] Logout
 - [x] Resumo de ordens abertas na Home
+- [x] Lista e filtros de ordens de serviço
 
 ### Em andamento
 
 - [ ] Interceptor do Dio
-- [ ] Lista de ordens de serviço
 
 ### Planejado
 

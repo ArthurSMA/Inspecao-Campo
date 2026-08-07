@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/network/api_client.dart';
 import 'package:flutter_application_1/core/storage/token_storage.dart';
 import 'package:flutter_application_1/feat/auth/data/models/login_response.dart';
-import 'package:flutter_application_1/feat/auth/data/services/auth_service.dart';
+import 'package:flutter_application_1/feat/auth/services/auth_service.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key, required this.onLogin});

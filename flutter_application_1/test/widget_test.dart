@@ -7,6 +7,9 @@ import 'package:flutter_application_1/feat/home/data/models/home_availability.da
 import 'package:flutter_application_1/feat/home/data/models/home_summary.dart';
 import 'package:flutter_application_1/feat/home/presentation/widgets/home_dashboard.dart';
 import 'package:flutter_application_1/feat/work_orders/data/models/work_order.dart';
+import 'package:flutter_application_1/feat/work_orders/presentation/widgets/work_order_card.dart';
+import 'package:flutter_application_1/feat/work_orders/presentation/widgets/work_order_filters.dart';
+import 'package:flutter_application_1/feat/work_orders/presentation/work_order_presentation.dart';
 
 void main() {
   testWidgets('exibe o formulário de login', (tester) async {
@@ -81,7 +84,79 @@ void main() {
     expect(orderWithStatus('open').isOpen, isTrue);
     expect(orderWithStatus('in_progress').isOpen, isTrue);
     expect(orderWithStatus('done').isOpen, isFalse);
-    expect(orderWithStatus('open').notes, isNull);
+    expect(orderWithStatus('open').notes, isEmpty);
+    expect(orderWithStatus('open').latitude, isA<double>());
+    expect(orderWithStatus('open').scheduledAt, isA<DateTime>());
+  });
+
+  testWidgets('WorkOrderCard traduz prioridade e status', (tester) async {
+    final workOrder = WorkOrder.fromJson({
+      'id': 'wo_1',
+      'code': 'OS-001',
+      'title': 'Inspeção de poste',
+      'description': 'Descrição',
+      'address': 'Rua das Acácias, 120',
+      'priority': 'high',
+      'status': 'open',
+      'latitude': -7.1,
+      'longitude': -34.8,
+      'scheduledAt': '2026-07-28T13:00:00.000Z',
+      'updatedAt': '2026-07-26T12:00:00.000Z',
+      'notes': '',
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: WorkOrderCard(workOrder: workOrder)),
+      ),
+    );
+
+    expect(find.text('OS-001'), findsOneWidget);
+    expect(find.text('Alta'), findsOneWidget);
+    expect(find.text('Aberta'), findsOneWidget);
+    expect(find.text('Iniciar'), findsOneWidget);
+    expect(workOrder.statusColor, const Color(0xFF7895B2));
+    expect(workOrder.priorityLabel, 'Alta');
+  });
+
+  test('padroniza apresentação de todos os status e prioridades', () {
+    WorkOrder workOrder(String status, String priority) => WorkOrder.fromJson({
+      'id': 'wo_1',
+      'code': 'OS-001',
+      'title': 'Inspeção',
+      'description': 'Descrição',
+      'address': 'Endereço',
+      'priority': priority,
+      'status': status,
+      'latitude': -7.1,
+      'longitude': -34.8,
+      'scheduledAt': '2026-07-28T13:00:00.000Z',
+      'updatedAt': '2026-07-26T12:00:00.000Z',
+    });
+
+    expect(workOrder('open', 'high').statusLabel, 'Aberta');
+    expect(workOrder('in_progress', 'medium').statusLabel, 'Em andamento');
+    expect(workOrder('done', 'low').statusLabel, 'Concluída');
+    expect(workOrder('open', 'high').priorityLabel, 'Alta');
+    expect(workOrder('open', 'medium').priorityLabel, 'Média');
+    expect(workOrder('open', 'low').priorityLabel, 'Baixa');
+  });
+
+  testWidgets('WorkOrderFilters informa a seleção', (tester) async {
+    var selected = WorkOrderFilter.all;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: WorkOrderFilters(
+            selectedFilter: selected,
+            onSelected: (filter) => selected = filter,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Concluídas'));
+    expect(selected, WorkOrderFilter.done);
   });
 
   testWidgets('HomeDashboard exibe resumo real e indicadores zerados', (

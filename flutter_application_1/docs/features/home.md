@@ -97,8 +97,8 @@ lib/
     │   └── presentation/
     │       ├── pages/home_page.dart
     │       └── widgets/home_dashboard.dart
-    └── work_orders/data/
-        ├── models/work_order.dart
+    └── work_orders/
+        ├── data/models/work_order.dart
         └── services/work_order_service.dart
 ```
 
@@ -112,6 +112,8 @@ lib/
 - `connectivity_service.dart`: consulta a presença de uma interface de rede.
 - `work_order_service.dart`: acessa a API e classifica suas falhas.
 - `work_order.dart`: converte o contrato de ordens e identifica ordens abertas.
+- `app_navigation_bar.dart`: mantém os mesmos destinos inferiores na Home e em
+  Work Orders; Histórico permanece apenas como destino não implementado.
 
 ## Tratamento de erros
 
@@ -128,11 +130,11 @@ lib/
 - O `AuthGate` ainda valida a sessão na API ao iniciar o aplicativo, portanto uma
   inicialização totalmente offline ainda não abre a Home.
 - Não há banco de inspeções, fila de sincronização ou última sincronização salva.
-- Ordens e Histórico ainda não possuem páginas.
+- O detalhe de uma ordem e o Histórico ainda não possuem páginas.
 
 ## Próximos passos
 
 - Persistir usuário validado e ordens para permitir inicialização offline segura.
-- Implementar a lista e o detalhe de ordens.
+- Implementar o detalhe de ordens.
 - Conectar inspeções pendentes e falhas ao banco local.
 - Implementar fila e persistência da última sincronização.

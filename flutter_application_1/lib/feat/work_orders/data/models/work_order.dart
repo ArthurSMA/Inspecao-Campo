@@ -11,7 +11,7 @@ class WorkOrder {
     required this.longitude,
     required this.scheduledAt,
     required this.updatedAt,
-    this.notes,
+    required this.notes,
   });
 
   final String id;
@@ -25,7 +25,7 @@ class WorkOrder {
   final double longitude;
   final DateTime scheduledAt;
   final DateTime updatedAt;
-  final String? notes;
+  final String notes;
 
   bool get isOpen => status == 'open' || status == 'in_progress';
 
@@ -42,7 +42,7 @@ class WorkOrder {
       longitude: (json['longitude'] as num).toDouble(),
       scheduledAt: DateTime.parse(json['scheduledAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
-      notes: json['notes'] as String?,
+      notes: json['notes'] as String? ?? '',
     );
   }
 }
