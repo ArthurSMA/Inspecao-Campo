@@ -13,4 +13,7 @@ class WorkOrders extends Table {
   DateTimeColumn get scheduledAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get notes => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }

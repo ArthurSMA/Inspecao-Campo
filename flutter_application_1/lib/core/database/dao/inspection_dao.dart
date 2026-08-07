@@ -21,12 +21,12 @@ class InspectionDao extends DatabaseAccessor<AppDatabase>
   Future<List<Inspection>> getPendingInspections() {
     return (select(
       inspections,
-    )..where((table) => table.synced.equals(false))).get();
+    )..where((table) => table.status.equals('pending'))).get();
   }
 
   Future<void> markAsSynced(int id) async {
     await (update(inspections)..where((table) => table.id.equals(id))).write(
-      const InspectionsCompanion(synced: Value(true)),
+      const InspectionsCompanion(status: Value('synced')),
     );
   }
 

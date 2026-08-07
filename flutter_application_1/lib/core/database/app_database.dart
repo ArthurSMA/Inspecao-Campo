@@ -15,8 +15,27 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  AppDatabase.forTesting(super.executor);
+
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (migrator) => migrator.createAll(),
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        await customStatement(
+          'DELETE FROM work_orders '
+          'WHERE rowid NOT IN ('
+          'SELECT MAX(rowid) FROM work_orders GROUP BY id'
+          ')',
+        );
+        await migrator.alterTable(TableMigration(workOrders));
+        await migrator.alterTable(TableMigration(inspections));
+      }
+    },
+  );
 }
 
 LazyDatabase _openConnection() {

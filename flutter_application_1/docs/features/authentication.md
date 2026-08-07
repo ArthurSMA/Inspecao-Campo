@@ -175,15 +175,22 @@ Atualmente são tratados:
 
 A biblioteca `flutter_secure_storage` é utilizada para armazenar o token de acesso de maneira segura.
 
-Atualmente, apenas o campo `accessToken` é armazenado.
+O `accessToken` é armazenado no `flutter_secure_storage`. Após uma autenticação
+online, `id`, `name`, `email` e `role` também são mantidos no SQLite por meio do
+Drift. A senha nunca é armazenada localmente.
 
 ---
 
 ## Proteção da sessão e logout
 
-Ao iniciar, o `AuthGate` lê o token seguro e o valida com `GET /auth/me`.
+Ao iniciar, o `AuthGate` lê o token seguro e tenta validá-lo com `GET /auth/me`.
 A `HomePage` só é construída depois de uma validação bem-sucedida. Tokens
 inválidos ou expirados (HTTP 401) são removidos e o login é exibido.
+
+Se a API estiver inacessível por falha de conexão ou timeout, uma sessão já
+autenticada pode ser restaurada com o usuário salvo no SQLite. Isso não permite
+um primeiro login offline: sem token e usuário previamente salvos, o login
+continua dependendo de `POST /auth/login`.
 
 O mock não oferece endpoint de logout. Por isso, a saída é local: a ação
 visível na `HomePage` remove o token e faz o `AuthGate` reconstruir o login,
@@ -196,5 +203,5 @@ pois o desafio não exige autorização por perfil.
 
 - não há renovação automática do token;
 - não há interceptador global do Dio;
-- uma indisponibilidade da API impede a abertura da área interna até que a
-  sessão possa ser validada novamente.
+- uma indisponibilidade da API impede a abertura da área interna quando não há
+  usuário local de uma sessão previamente autenticada.

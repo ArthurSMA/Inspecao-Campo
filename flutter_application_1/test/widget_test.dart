@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/native.dart';
 
+import 'package:flutter_application_1/core/database/app_database.dart'
+    hide WorkOrder;
+import 'package:flutter_application_1/core/database/dao/user_dao.dart';
 import 'package:flutter_application_1/feat/auth/data/models/login_response.dart';
 import 'package:flutter_application_1/feat/auth/presentation/pages/login_page.dart';
 import 'package:flutter_application_1/feat/home/data/models/home_availability.dart';
@@ -12,8 +16,22 @@ import 'package:flutter_application_1/feat/work_orders/presentation/widgets/work
 import 'package:flutter_application_1/feat/work_orders/presentation/work_order_presentation.dart';
 
 void main() {
+  late AppDatabase database;
+  late UserDao userDao;
+
+  setUp(() {
+    database = AppDatabase.forTesting(NativeDatabase.memory());
+    userDao = UserDao(database);
+  });
+
+  tearDown(() => database.close());
+
   testWidgets('exibe o formulário de login', (tester) async {
-    await tester.pumpWidget(MaterialApp(home: LoginPage(onLogin: (_) {})));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LoginPage(onLogin: (_) {}, userDao: userDao),
+      ),
+    );
 
     expect(find.text('Inspeção de Campo'), findsOneWidget);
     expect(find.text('E-mail'), findsOneWidget);
@@ -24,7 +42,11 @@ void main() {
   testWidgets('valida campos obrigatórios e permite exibir a senha', (
     tester,
   ) async {
-    await tester.pumpWidget(MaterialApp(home: LoginPage(onLogin: (_) {})));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LoginPage(onLogin: (_) {}, userDao: userDao),
+      ),
+    );
 
     await tester.tap(find.text('Entrar'));
     await tester.pump();

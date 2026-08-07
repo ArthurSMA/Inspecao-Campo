@@ -14,6 +14,4 @@ class Inspections extends Table {
 
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
-
-  BoolColumn get synced => boolean().withDefault(const Constant(false))();
 }

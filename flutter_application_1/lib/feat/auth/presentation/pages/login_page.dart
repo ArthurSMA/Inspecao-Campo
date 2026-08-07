@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/database/dao/user_dao.dart';
 
 import 'package:flutter_application_1/feat/auth/data/models/login_response.dart';
 import 'package:flutter_application_1/feat/auth/presentation/widgets/login_form.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key, required this.onLogin});
+  const LoginPage({super.key, required this.onLogin, required this.userDao});
 
   final ValueChanged<AuthUser> onLogin;
+  final UserDao userDao;
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +82,7 @@ class LoginPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 28),
-                          LoginForm(onLogin: onLogin),
+                          LoginForm(onLogin: onLogin, userDao: userDao),
                         ],
                       ),
                     ),

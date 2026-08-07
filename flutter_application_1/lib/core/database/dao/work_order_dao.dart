@@ -14,6 +14,12 @@ class WorkOrderDao extends DatabaseAccessor<AppDatabase>
     await into(workOrders).insertOnConflictUpdate(workOrder);
   }
 
+  Future<void> saveWorkOrders(List<WorkOrdersCompanion> orders) async {
+    await batch((batch) {
+      batch.insertAllOnConflictUpdate(workOrders, orders);
+    });
+  }
+
   Future<List<WorkOrder>> getAllWorkOrders() async {
     return select(workOrders).get();
   }

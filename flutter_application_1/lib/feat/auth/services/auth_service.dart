@@ -1,12 +1,16 @@
 import 'package:dio/dio.dart';
+import 'package:drift/drift.dart';
 
+import 'package:flutter_application_1/core/database/app_database.dart';
+import 'package:flutter_application_1/core/database/dao/user_dao.dart';
 import 'package:flutter_application_1/core/network/api_client.dart';
 import 'package:flutter_application_1/feat/auth/data/models/login_response.dart';
 
 class AuthService {
-  AuthService(this._apiClient);
+  AuthService(this._apiClient, this._userDao);
 
   final ApiClient _apiClient;
+  final UserDao _userDao;
 
   Future<LoginResponse> login({
     required String email,
@@ -24,7 +28,9 @@ class AuthService {
         throw const AuthException('A API retornou uma resposta vazia.');
       }
 
-      return LoginResponse.fromJson(data);
+      final loginResponse = LoginResponse.fromJson(data);
+      await _saveUser(loginResponse.user);
+      return loginResponse;
     } on DioException catch (error) {
       if (error.response?.statusCode == 401) {
         throw const AuthException('E-mail ou senha inválidos.');
@@ -76,7 +82,9 @@ class AuthService {
       if (data == null) {
         throw const AuthException('A API retornou uma resposta vazia.');
       }
-      return AuthUser.fromJson(data);
+      final user = AuthUser.fromJson(data);
+      await _saveUser(user);
+      return user;
     } on DioException catch (error) {
       if (error.response?.statusCode == 401) {
         throw const AuthException(
@@ -87,10 +95,10 @@ class AuthService {
       if (error.type == DioExceptionType.connectionTimeout ||
           error.type == DioExceptionType.receiveTimeout ||
           error.type == DioExceptionType.sendTimeout) {
-        throw const AuthException('A conexão com a API demorou demais.');
+        return _getCachedUser();
       }
       if (error.type == DioExceptionType.connectionError) {
-        throw const AuthException('Não foi possível validar sua sessão.');
+        return _getCachedUser();
       }
       throw const AuthException('Erro ao validar sua sessão.');
     } on FormatException {
@@ -108,6 +116,32 @@ class AuthService {
     } catch (_) {
       throw const AuthException('Erro inesperado ao validar sua sessão.');
     }
+  }
+
+  Future<void> _saveUser(AuthUser user) {
+    return _userDao.saveUser(
+      UsersCompanion(
+        id: Value(user.id),
+        name: Value(user.name),
+        email: Value(user.email),
+        role: Value(user.role),
+      ),
+    );
+  }
+
+  Future<AuthUser> _getCachedUser() async {
+    final user = await _userDao.getUser();
+    if (user == null) {
+      throw const AuthException(
+        'Não foi possível validar a sessão e não há usuário salvo no dispositivo.',
+      );
+    }
+    return AuthUser(
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    );
   }
 }
 

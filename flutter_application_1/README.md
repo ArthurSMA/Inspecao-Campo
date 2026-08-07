@@ -3,8 +3,9 @@
 Aplicativo mobile desenvolvido em Flutter para auxiliar técnicos em atividades de inspeção e operação em campo.
 
 O projeto simula um ambiente no qual profissionais consultam ordens de serviço.
-Registro de evidências, persistência local e sincronização fazem parte da evolução
-planejada, mas ainda não estão implementados.
+As ordens de serviço e os dados mínimos do usuário autenticado são persistidos
+localmente com Drift/SQLite. Registro de evidências e sincronização de inspeções
+continuam planejados, mas ainda não estão implementados.
 
 ---
 
@@ -72,6 +73,7 @@ lib/
 - Dio
 - flutter_secure_storage
 - connectivity_plus
+- Drift / SQLite
 
 ### API mock
 
@@ -145,6 +147,8 @@ docs/
 - [x] Logout
 - [x] Resumo de ordens abertas na Home
 - [x] Lista e filtros de ordens de serviço
+- [x] Cache offline de ordens de serviço
+- [x] Restauração offline de sessão previamente autenticada
 
 ### Em andamento
 
@@ -155,9 +159,29 @@ docs/
 - [ ] Detalhes da ordem de serviço
 - [ ] Captura de fotos
 - [ ] Captura de localização
-- [ ] Persistência local
+- [ ] Persistência local de inspeções
 - [ ] Sincronização
 - [ ] Histórico
+
+## Funcionamento online e offline
+
+O `db.json` pertence à API mock e continua sendo o banco remoto. O Dio acessa a
+API e o Drift controla exclusivamente o SQLite local do aplicativo.
+
+```text
+ONLINE:  API → Flutter/Dio → SQLite/Drift → UI
+OFFLINE: SQLite/Drift → UI
+```
+
+Uma resposta válida de `GET /work-orders` atualiza o cache antes de chegar à UI.
+Em falhas de conexão ou timeout, as ordens salvas são usadas. HTTP 401 e payload
+inválido não são escondidos pelo cache.
+
+O primeiro login sempre exige a API. Após um login online, token e dados mínimos
+do usuário são salvos separadamente: o token no armazenamento seguro e
+`id`, `name`, `email` e `role` no SQLite. A senha nunca é armazenada. Uma sessão
+previamente autenticada pode ser restaurada offline; HTTP 401 ou logout explícito
+removem a sessão local.
 
 ---
 

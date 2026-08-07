@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/database/app_database.dart';
+import 'package:flutter_application_1/core/database/dao/user_dao.dart';
 
 import 'package:flutter_application_1/core/network/api_client.dart';
 import 'package:flutter_application_1/core/storage/token_storage.dart';
@@ -8,7 +10,9 @@ import 'package:flutter_application_1/feat/auth/presentation/pages/login_page.da
 import 'package:flutter_application_1/feat/home/presentation/pages/home_page.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  const App({super.key, required this.database});
+
+  final AppDatabase database;
 
   @override
   Widget build(BuildContext context) {
@@ -62,13 +66,15 @@ class App extends StatelessWidget {
           ),
         ),
       ),
-      home: const AuthGate(),
+      home: AuthGate(database: database),
     );
   }
 }
 
 class AuthGate extends StatefulWidget {
-  const AuthGate({super.key});
+  const AuthGate({super.key, required this.database});
+
+  final AppDatabase database;
 
   @override
   State<AuthGate> createState() => _AuthGateState();
@@ -77,6 +83,7 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   final TokenStorage _tokenStorage = const TokenStorage();
   late final AuthService _authService;
+  late final UserDao _userDao;
 
   AuthUser? _user;
   bool _isCheckingSession = true;
@@ -84,7 +91,8 @@ class _AuthGateState extends State<AuthGate> {
   @override
   void initState() {
     super.initState();
-    _authService = AuthService(ApiClient());
+    _userDao = UserDao(widget.database);
+    _authService = AuthService(ApiClient(), _userDao);
     _restoreSession();
   }
 
@@ -101,7 +109,7 @@ class _AuthGateState extends State<AuthGate> {
       }
     } on AuthException catch (error) {
       if (error.shouldClearSession) {
-        await _tokenStorage.deleteToken();
+        await _clearLocalSession();
       }
     } catch (_) {
       // Storage failures and malformed persisted data must not expose HomePage.
@@ -117,11 +125,16 @@ class _AuthGateState extends State<AuthGate> {
   }
 
   Future<void> _logout() async {
-    await _tokenStorage.deleteToken();
+    await _clearLocalSession();
     if (!mounted) return;
 
     setState(() => _user = null);
     Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Future<void> _clearLocalSession() async {
+    await _tokenStorage.deleteToken();
+    await _userDao.deleteUser();
   }
 
   @override
@@ -132,13 +145,14 @@ class _AuthGateState extends State<AuthGate> {
 
     final user = _user;
     if (user == null) {
-      return LoginPage(onLogin: _handleLogin);
+      return LoginPage(onLogin: _handleLogin, userDao: _userDao);
     }
 
     return HomePage(
       userName: user.name,
       onLogout: _logout,
       onSessionInvalid: _logout,
+      database: widget.database,
     );
   }
 }

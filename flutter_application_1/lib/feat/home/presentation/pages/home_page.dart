@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/database/app_database.dart';
+import 'package:flutter_application_1/core/database/dao/work_order_dao.dart';
 import 'package:flutter_application_1/core/network/api_client.dart';
-import 'package:flutter_application_1/core/network/connectivity_service.dart';
 import 'package:flutter_application_1/core/storage/token_storage.dart';
 import 'package:flutter_application_1/feat/home/data/models/home_availability.dart';
 import 'package:flutter_application_1/feat/home/data/models/home_summary.dart';
@@ -16,11 +17,13 @@ class HomePage extends StatefulWidget {
     required this.userName,
     required this.onLogout,
     required this.onSessionInvalid,
+    required this.database,
   });
 
   final String userName;
   final Future<void> Function() onLogout;
   final Future<void> Function() onSessionInvalid;
+  final AppDatabase database;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -28,7 +31,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TokenStorage _tokenStorage = const TokenStorage();
-  final ConnectivityService _connectivityService = ConnectivityService();
   late final WorkOrderService _workOrderService;
 
   HomeSummary? _summary;
@@ -39,7 +41,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _workOrderService = WorkOrderService(ApiClient());
+    _workOrderService = WorkOrderService(
+      ApiClient(),
+      WorkOrderDao(widget.database),
+    );
     _loadSummary();
   }
 
@@ -59,22 +64,21 @@ class _HomePageState extends State<HomePage> {
         return;
       }
 
-      final hasNetwork = await _connectivityService.hasConnection();
-      if (!hasNetwork) {
-        _showOfflineWithoutCache();
-        return;
-      }
-
       final workOrders = await _workOrderService.getWorkOrders(
         accessToken: token,
       );
       final openOrders = workOrders.where((order) => order.isOpen).length;
+      final isUsingCache =
+          _workOrderService.lastDataSource == WorkOrderDataSource.cache;
 
       if (mounted) {
         setState(() {
           _summary = HomeSummary(openOrders: openOrders);
-          _availability = const HomeAvailability(
-            state: HomeAvailabilityState.online,
+          _availability = HomeAvailability(
+            state: isUsingCache
+                ? HomeAvailabilityState.offline
+                : HomeAvailabilityState.online,
+            hasLocalData: isUsingCache,
           );
         });
       }
@@ -133,6 +137,7 @@ class _HomePageState extends State<HomePage> {
           userName: widget.userName,
           onLogout: widget.onLogout,
           onSessionInvalid: widget.onSessionInvalid,
+          database: widget.database,
         ),
       ),
     );

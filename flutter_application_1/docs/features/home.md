@@ -47,9 +47,9 @@ Rede disponível e API acessível são conceitos diferentes:
   permanece online e o cartão apresenta o erro específico.
 - HTTP 401 nunca é classificado como offline: ele invalida a sessão.
 
-Como ainda não há cache de ordens, o modo offline informa: “Sem conexão e sem
-ordens armazenadas localmente.” A estrutura já permite informar a presença de
-dados locais quando essa persistência for implementada.
+Quando a API está inacessível, a Home consulta o cache de ordens pelo mesmo
+`WorkOrderService`. Com cache, calcula o número de ordens abertas e indica modo
+offline com dados locais. Sem cache, informa que não há ordens armazenadas.
 
 ## Carregamento das ordens
 
@@ -58,11 +58,11 @@ O `WorkOrderService` reutiliza `ApiClient`, envia o token no header
 sessão, servidor e payload. A Home considera abertas ordens com status `open` ou
 `in_progress`.
 
-Não existe cache local nesta etapa. Portanto, o fluxo atual é:
+O fluxo atual é:
 
 ```text
-Online: API → resumo em memória → interface
-Offline: mensagem sem cache → tentar novamente
+Online: API → SQLite → resumo/interface
+Offline: SQLite → resumo/interface
 ```
 
 ## Resumo exibido
@@ -125,16 +125,15 @@ lib/
 
 ## Limitações atuais
 
-- Não existe cache local de ordens.
 - Não há login offline; o primeiro login exige a API.
-- O `AuthGate` ainda valida a sessão na API ao iniciar o aplicativo, portanto uma
-  inicialização totalmente offline ainda não abre a Home.
+- Uma sessão previamente autenticada pode ser restaurada offline usando token e
+  usuário local. HTTP 401 continua invalidando a sessão.
 - Não há banco de inspeções, fila de sincronização ou última sincronização salva.
 - O detalhe de uma ordem e o Histórico ainda não possuem páginas.
 
 ## Próximos passos
 
-- Persistir usuário validado e ordens para permitir inicialização offline segura.
+- Expandir a persistência local para inspeções e status de sincronização.
 - Implementar o detalhe de ordens.
 - Conectar inspeções pendentes e falhas ao banco local.
 - Implementar fila e persistência da última sincronização.

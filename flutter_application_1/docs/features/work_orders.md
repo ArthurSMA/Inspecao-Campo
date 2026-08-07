@@ -26,9 +26,14 @@ WorkOrderCard
 
 A `WorkOrdersPage` inicia o carregamento em `initState`, lê o token pelo
 `TokenStorage` e chama o serviço com o header
-`Authorization: Bearer <accessToken>`. A resposta é mantida em memória e a
-interface apresenta loading, erro com nova tentativa, lista vazia ou a lista de
-cards.
+`Authorization: Bearer <accessToken>`. Uma resposta válida é persistida no
+SQLite antes de ser devolvida à interface, que apresenta loading, erro com nova
+tentativa, lista vazia ou a lista de cards.
+
+Em `connectionError` ou timeout, o serviço consulta o cache local. Havendo
+dados, a página continua exibindo as ordens sem erro bloqueante. Sem cache,
+apresenta mensagem legível. HTTP 401, erros HTTP de servidor e payload inválido
+não usam fallback local.
 
 ## Estrutura e responsabilidades
 
@@ -100,4 +105,5 @@ Se não houver token ou o endpoint responder HTTP 401, a página chama
 
 - A tela de detalhes/início da ordem ainda não foi implementada.
 - Histórico ainda não possui página.
-- Não existe cache local; uma nova entrada na página consulta a API novamente.
+- Uma nova entrada tenta atualizar pela API e usa o cache somente quando a API
+  está inacessível por conexão ou timeout.

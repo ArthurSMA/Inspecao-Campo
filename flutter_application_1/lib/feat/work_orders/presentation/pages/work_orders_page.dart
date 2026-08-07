@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/database/app_database.dart'
+    hide WorkOrder;
+import 'package:flutter_application_1/core/database/dao/work_order_dao.dart';
 import 'package:flutter_application_1/core/network/api_client.dart';
 import 'package:flutter_application_1/core/storage/token_storage.dart';
 import 'package:flutter_application_1/feat/home/presentation/pages/home_page.dart';
@@ -16,11 +19,13 @@ class WorkOrdersPage extends StatefulWidget {
     required this.userName,
     required this.onLogout,
     required this.onSessionInvalid,
+    required this.database,
   });
 
   final String userName;
   final Future<void> Function() onLogout;
   final Future<void> Function() onSessionInvalid;
+  final AppDatabase database;
 
   @override
   State<WorkOrdersPage> createState() => _WorkOrdersPageState();
@@ -53,7 +58,10 @@ class _WorkOrdersPageState extends State<WorkOrdersPage> {
   void initState() {
     super.initState();
 
-    _workOrderService = WorkOrderService(ApiClient());
+    _workOrderService = WorkOrderService(
+      ApiClient(),
+      WorkOrderDao(widget.database),
+    );
 
     _loadWorkOrders();
   }
@@ -121,6 +129,7 @@ class _WorkOrdersPageState extends State<WorkOrdersPage> {
           userName: widget.userName,
           onLogout: widget.onLogout,
           onSessionInvalid: widget.onSessionInvalid,
+          database: widget.database,
         ),
       ),
     );

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_application_1/core/database/dao/user_dao.dart';
 import 'package:flutter_application_1/core/network/api_client.dart';
 import 'package:flutter_application_1/core/storage/token_storage.dart';
 import 'package:flutter_application_1/feat/auth/data/models/login_response.dart';
 import 'package:flutter_application_1/feat/auth/services/auth_service.dart';
 
 class LoginForm extends StatefulWidget {
-  const LoginForm({super.key, required this.onLogin});
+  const LoginForm({super.key, required this.onLogin, required this.userDao});
 
   final ValueChanged<AuthUser> onLogin;
+  final UserDao userDao;
 
   @override
   State<LoginForm> createState() => _LoginFormState();
@@ -31,7 +33,7 @@ class _LoginFormState extends State<LoginForm> {
   @override
   void initState() {
     super.initState();
-    _authService = AuthService(ApiClient());
+    _authService = AuthService(ApiClient(), widget.userDao);
   }
 
   @override
