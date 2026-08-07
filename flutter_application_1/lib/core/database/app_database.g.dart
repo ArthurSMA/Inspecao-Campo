@@ -1113,6 +1113,19 @@ class $InspectionsTable extends Inspections
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _syncedMeta = const VerificationMeta('synced');
+  @override
+  late final GeneratedColumn<bool> synced = GeneratedColumn<bool>(
+    'synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1124,6 +1137,7 @@ class $InspectionsTable extends Inspections
     longitude,
     createdAt,
     updatedAt,
+    synced,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1201,6 +1215,12 @@ class $InspectionsTable extends Inspections
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('synced')) {
+      context.handle(
+        _syncedMeta,
+        synced.isAcceptableOrUnknown(data['synced']!, _syncedMeta),
+      );
+    }
     return context;
   }
 
@@ -1246,6 +1266,10 @@ class $InspectionsTable extends Inspections
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      synced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}synced'],
+      )!,
     );
   }
 
@@ -1265,6 +1289,7 @@ class Inspection extends DataClass implements Insertable<Inspection> {
   final double? longitude;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool synced;
   const Inspection({
     required this.id,
     required this.workOrderId,
@@ -1275,6 +1300,7 @@ class Inspection extends DataClass implements Insertable<Inspection> {
     this.longitude,
     required this.createdAt,
     required this.updatedAt,
+    required this.synced,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1294,6 +1320,7 @@ class Inspection extends DataClass implements Insertable<Inspection> {
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['synced'] = Variable<bool>(synced);
     return map;
   }
 
@@ -1314,6 +1341,7 @@ class Inspection extends DataClass implements Insertable<Inspection> {
           : Value(longitude),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      synced: Value(synced),
     );
   }
 
@@ -1332,6 +1360,7 @@ class Inspection extends DataClass implements Insertable<Inspection> {
       longitude: serializer.fromJson<double?>(json['longitude']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      synced: serializer.fromJson<bool>(json['synced']),
     );
   }
   @override
@@ -1347,6 +1376,7 @@ class Inspection extends DataClass implements Insertable<Inspection> {
       'longitude': serializer.toJson<double?>(longitude),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'synced': serializer.toJson<bool>(synced),
     };
   }
 
@@ -1360,6 +1390,7 @@ class Inspection extends DataClass implements Insertable<Inspection> {
     Value<double?> longitude = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? synced,
   }) => Inspection(
     id: id ?? this.id,
     workOrderId: workOrderId ?? this.workOrderId,
@@ -1370,6 +1401,7 @@ class Inspection extends DataClass implements Insertable<Inspection> {
     longitude: longitude.present ? longitude.value : this.longitude,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    synced: synced ?? this.synced,
   );
   Inspection copyWithCompanion(InspectionsCompanion data) {
     return Inspection(
@@ -1384,6 +1416,7 @@ class Inspection extends DataClass implements Insertable<Inspection> {
       longitude: data.longitude.present ? data.longitude.value : this.longitude,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      synced: data.synced.present ? data.synced.value : this.synced,
     );
   }
 
@@ -1398,7 +1431,8 @@ class Inspection extends DataClass implements Insertable<Inspection> {
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('synced: $synced')
           ..write(')'))
         .toString();
   }
@@ -1414,6 +1448,7 @@ class Inspection extends DataClass implements Insertable<Inspection> {
     longitude,
     createdAt,
     updatedAt,
+    synced,
   );
   @override
   bool operator ==(Object other) =>
@@ -1427,7 +1462,8 @@ class Inspection extends DataClass implements Insertable<Inspection> {
           other.latitude == this.latitude &&
           other.longitude == this.longitude &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.synced == this.synced);
 }
 
 class InspectionsCompanion extends UpdateCompanion<Inspection> {
@@ -1440,6 +1476,7 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
   final Value<double?> longitude;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<bool> synced;
   const InspectionsCompanion({
     this.id = const Value.absent(),
     this.workOrderId = const Value.absent(),
@@ -1450,6 +1487,7 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
     this.longitude = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.synced = const Value.absent(),
   });
   InspectionsCompanion.insert({
     this.id = const Value.absent(),
@@ -1461,6 +1499,7 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
     this.longitude = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
+    this.synced = const Value.absent(),
   }) : workOrderId = Value(workOrderId),
        comment = Value(comment),
        status = Value(status),
@@ -1476,6 +1515,7 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
     Expression<double>? longitude,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<bool>? synced,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1487,6 +1527,7 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
       if (longitude != null) 'longitude': longitude,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (synced != null) 'synced': synced,
     });
   }
 
@@ -1500,6 +1541,7 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
     Value<double?>? longitude,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<bool>? synced,
   }) {
     return InspectionsCompanion(
       id: id ?? this.id,
@@ -1511,6 +1553,7 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
       longitude: longitude ?? this.longitude,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      synced: synced ?? this.synced,
     );
   }
 
@@ -1544,6 +1587,9 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (synced.present) {
+      map['synced'] = Variable<bool>(synced.value);
+    }
     return map;
   }
 
@@ -1558,7 +1604,8 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('synced: $synced')
           ..write(')'))
         .toString();
   }
@@ -2100,6 +2147,7 @@ typedef $$InspectionsTableCreateCompanionBuilder =
       Value<double?> longitude,
       required DateTime createdAt,
       required DateTime updatedAt,
+      Value<bool> synced,
     });
 typedef $$InspectionsTableUpdateCompanionBuilder =
     InspectionsCompanion Function({
@@ -2112,6 +2160,7 @@ typedef $$InspectionsTableUpdateCompanionBuilder =
       Value<double?> longitude,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<bool> synced,
     });
 
 class $$InspectionsTableFilterComposer
@@ -2165,6 +2214,11 @@ class $$InspectionsTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get synced => $composableBuilder(
+    column: $table.synced,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2222,6 +2276,11 @@ class $$InspectionsTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get synced => $composableBuilder(
+    column: $table.synced,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$InspectionsTableAnnotationComposer
@@ -2261,6 +2320,9 @@ class $$InspectionsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get synced =>
+      $composableBuilder(column: $table.synced, builder: (column) => column);
 }
 
 class $$InspectionsTableTableManager
@@ -2303,6 +2365,7 @@ class $$InspectionsTableTableManager
                 Value<double?> longitude = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> synced = const Value.absent(),
               }) => InspectionsCompanion(
                 id: id,
                 workOrderId: workOrderId,
@@ -2313,6 +2376,7 @@ class $$InspectionsTableTableManager
                 longitude: longitude,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                synced: synced,
               ),
           createCompanionCallback:
               ({
@@ -2325,6 +2389,7 @@ class $$InspectionsTableTableManager
                 Value<double?> longitude = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<bool> synced = const Value.absent(),
               }) => InspectionsCompanion.insert(
                 id: id,
                 workOrderId: workOrderId,
@@ -2335,6 +2400,7 @@ class $$InspectionsTableTableManager
                 longitude: longitude,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                synced: synced,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
