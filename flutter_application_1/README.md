@@ -78,6 +78,7 @@ lib/
 - Material Design
 - Dio
 - flutter_secure_storage
+- connectivity_plus
 
 ### API mock
 
@@ -126,13 +127,15 @@ docs/
 │   └── architecture.md
 │
 └── features/
-    └── authentication.md
+    ├── authentication.md
+    └── home.md
 ```
 
 | Documento | Descrição |
 |---|---|
 | `architecture.md` | Arquitetura do projeto |
 | `authentication.md` | Fluxo de login e autenticação |
+| `home.md` | Painel inicial, resumo de ordens e estados da interface |
 | `CONTRATO_API.md` | Contrato da API |
 | `DESAFIO_CANDIDATO.md` | Especificação do desafio |
 
@@ -147,11 +150,12 @@ docs/
 - [x] Persistência do token
 - [x] Tratamento de erros
 - [x] Navegação
+- [x] Proteção de rotas
+- [x] Logout
+- [x] Resumo de ordens abertas na Home
 
 ### Em andamento
 
-- [ ] Proteção de rotas
-- [ ] Logout
 - [ ] Interceptor do Dio
 - [ ] Lista de ordens de serviço
 

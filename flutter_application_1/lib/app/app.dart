@@ -132,6 +132,10 @@ class _AuthGateState extends State<AuthGate> {
       return LoginPage(onLogin: _handleLogin);
     }
 
-    return HomePage(userName: user.name, onLogout: _logout);
+    return HomePage(
+      userName: user.name,
+      onLogout: _logout,
+      onSessionInvalid: _logout,
+    );
   }
 }
