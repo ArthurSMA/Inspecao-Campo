@@ -3,9 +3,9 @@
 Aplicativo mobile desenvolvido em Flutter para auxiliar técnicos em atividades de inspeção e operação em campo.
 
 O projeto simula um ambiente no qual profissionais consultam ordens de serviço.
-As ordens de serviço e os dados mínimos do usuário autenticado são persistidos
-localmente com Drift/SQLite. Registro de evidências e sincronização de inspeções
-continuam planejados, mas ainda não estão implementados.
+Ordens, usuário autenticado e inspeções são persistidos localmente com
+Drift/SQLite. Inspeções podem ser preenchidas offline e sincronizadas com a API
+manualmente ou após a recuperação da conectividade.
 
 ---
 
@@ -15,6 +15,8 @@ continuam planejados, mas ainda não estão implementados.
 - Consulta de ordens de serviço;
 - Resumo de ordens abertas na Home;
 - Tratamento de sessão, conectividade e erros da API.
+- Formulário de inspeção com foto e GPS;
+- Rascunhos, fila de sincronização, retry e histórico local.
 
 ---
 
@@ -29,11 +31,13 @@ lib/
 │
 ├── core/
 │   ├── network/
+│   ├── database/
 │   └── storage/
 │
 ├── feat/
 │   ├── auth/
 │   ├── home/
+│   ├── inspection/
 │   └── work_orders/
 ├── shared/
 └── main.dart
@@ -121,6 +125,7 @@ docs/
 └── features/
     ├── authentication.md
     ├── home.md
+    ├── inspection.md
     └── work_orders.md
 ```
 
@@ -128,6 +133,7 @@ docs/
 |---|---|
 | `authentication.md` | Fluxo de login e autenticação |
 | `home.md` | Painel inicial, resumo de ordens e estados da interface |
+| `inspection.md` | Persistência, formulário, fila e sincronização |
 | `work_orders.md` | Listagem, filtros e representação das ordens |
 | `CONTRATO_API.md` | Contrato da API |
 | `DESAFIO_CANDIDATO.md` | Especificação do desafio |
@@ -149,6 +155,11 @@ docs/
 - [x] Lista e filtros de ordens de serviço
 - [x] Cache offline de ordens de serviço
 - [x] Restauração offline de sessão previamente autenticada
+- [x] Formulário de inspeção com observação, condição, foto e GPS
+- [x] Rascunho e conclusão persistidos no SQLite
+- [x] POST multipart de inspeções
+- [x] Fila manual e automática
+- [x] Histórico local, filtros e retry
 
 ### Em andamento
 
@@ -156,12 +167,8 @@ docs/
 
 ### Planejado
 
-- [ ] Detalhes da ordem de serviço
-- [ ] Captura de fotos
-- [ ] Captura de localização
-- [ ] Persistência local de inspeções
-- [ ] Sincronização
-- [ ] Histórico
+- [ ] Campos dinâmicos opcionais (`form-schema`)
+- [ ] Conciliação opcional com `GET /inspections`
 
 ## Funcionamento online e offline
 
@@ -182,6 +189,20 @@ do usuário são salvos separadamente: o token no armazenamento seguro e
 `id`, `name`, `email` e `role` no SQLite. A senha nunca é armazenada. Uma sessão
 previamente autenticada pode ser restaurada offline; HTTP 401 ou logout explícito
 removem a sessão local.
+
+## Inspeções e sincronização
+
+```text
+Formulário → SQLite → draft/pending
+pending/failed → POST /inspections → synced/failed
+```
+
+Cada inspeção recebe um `clientId` UUID v4 uma única vez. O mesmo valor é usado
+nos retries, permitindo a resposta idempotente HTTP 200 da API. HTTP 200 e 201
+são sucesso: o `serverId` é salvo, o status vira `synced` e o erro é limpo.
+Falhas ficam como `failed` com mensagem legível e podem ser reenviadas pelo
+histórico ou pelo botão da Home. A foto é copiada para o diretório persistente do
+aplicativo e o histórico é lido do SQLite, incluindo itens ainda não enviados.
 
 ---
 

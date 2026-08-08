@@ -1027,6 +1027,18 @@ class $InspectionsTable extends Inspections
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   static const VerificationMeta _workOrderIdMeta = const VerificationMeta(
     'workOrderId',
   );
@@ -1038,25 +1050,27 @@ class $InspectionsTable extends Inspections
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _commentMeta = const VerificationMeta(
-    'comment',
+  static const VerificationMeta _observationMeta = const VerificationMeta(
+    'observation',
   );
   @override
-  late final GeneratedColumn<String> comment = GeneratedColumn<String>(
-    'comment',
+  late final GeneratedColumn<String> observation = GeneratedColumn<String>(
+    'observation',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  static const VerificationMeta _conditionMeta = const VerificationMeta(
+    'condition',
+  );
   @override
-  late final GeneratedColumn<String> status = GeneratedColumn<String>(
-    'status',
+  late final GeneratedColumn<String> condition = GeneratedColumn<String>(
+    'condition',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _photoPathMeta = const VerificationMeta(
     'photoPath',
@@ -1091,6 +1105,50 @@ class $InspectionsTable extends Inspections
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _capturedAtMeta = const VerificationMeta(
+    'capturedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> capturedAt = GeneratedColumn<DateTime>(
+    'captured_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints:
+        'NOT NULL CHECK (status IN (\'draft\', \'pending\', \'synced\', \'failed\'))',
+  );
+  static const VerificationMeta _serverIdMeta = const VerificationMeta(
+    'serverId',
+  );
+  @override
+  late final GeneratedColumn<String> serverId = GeneratedColumn<String>(
+    'server_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _errorMessageMeta = const VerificationMeta(
+    'errorMessage',
+  );
+  @override
+  late final GeneratedColumn<String> errorMessage = GeneratedColumn<String>(
+    'error_message',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1116,12 +1174,17 @@ class $InspectionsTable extends Inspections
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    clientId,
     workOrderId,
-    comment,
-    status,
+    observation,
+    condition,
     photoPath,
     latitude,
     longitude,
+    capturedAt,
+    status,
+    serverId,
+    errorMessage,
     createdAt,
     updatedAt,
   ];
@@ -1140,6 +1203,14 @@ class $InspectionsTable extends Inspections
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
     if (data.containsKey('work_order_id')) {
       context.handle(
         _workOrderIdMeta,
@@ -1151,21 +1222,22 @@ class $InspectionsTable extends Inspections
     } else if (isInserting) {
       context.missing(_workOrderIdMeta);
     }
-    if (data.containsKey('comment')) {
+    if (data.containsKey('observation')) {
       context.handle(
-        _commentMeta,
-        comment.isAcceptableOrUnknown(data['comment']!, _commentMeta),
+        _observationMeta,
+        observation.isAcceptableOrUnknown(
+          data['observation']!,
+          _observationMeta,
+        ),
       );
     } else if (isInserting) {
-      context.missing(_commentMeta);
+      context.missing(_observationMeta);
     }
-    if (data.containsKey('status')) {
+    if (data.containsKey('condition')) {
       context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+        _conditionMeta,
+        condition.isAcceptableOrUnknown(data['condition']!, _conditionMeta),
       );
-    } else if (isInserting) {
-      context.missing(_statusMeta);
     }
     if (data.containsKey('photo_path')) {
       context.handle(
@@ -1183,6 +1255,37 @@ class $InspectionsTable extends Inspections
       context.handle(
         _longitudeMeta,
         longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta),
+      );
+    }
+    if (data.containsKey('captured_at')) {
+      context.handle(
+        _capturedAtMeta,
+        capturedAt.isAcceptableOrUnknown(data['captured_at']!, _capturedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_capturedAtMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(
+        _serverIdMeta,
+        serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta),
+      );
+    }
+    if (data.containsKey('error_message')) {
+      context.handle(
+        _errorMessageMeta,
+        errorMessage.isAcceptableOrUnknown(
+          data['error_message']!,
+          _errorMessageMeta,
+        ),
       );
     }
     if (data.containsKey('created_at')) {
@@ -1214,18 +1317,22 @@ class $InspectionsTable extends Inspections
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
       workOrderId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}work_order_id'],
       )!,
-      comment: attachedDatabase.typeMapping.read(
+      observation: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}comment'],
+        data['${effectivePrefix}observation'],
       )!,
-      status: attachedDatabase.typeMapping.read(
+      condition: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}status'],
-      )!,
+        data['${effectivePrefix}condition'],
+      ),
       photoPath: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}photo_path'],
@@ -1237,6 +1344,22 @@ class $InspectionsTable extends Inspections
       longitude: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}longitude'],
+      ),
+      capturedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}captured_at'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      serverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}server_id'],
+      ),
+      errorMessage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_message'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -1257,22 +1380,32 @@ class $InspectionsTable extends Inspections
 
 class Inspection extends DataClass implements Insertable<Inspection> {
   final int id;
+  final String clientId;
   final String workOrderId;
-  final String comment;
-  final String status;
+  final String observation;
+  final String? condition;
   final String? photoPath;
   final double? latitude;
   final double? longitude;
+  final DateTime capturedAt;
+  final String status;
+  final String? serverId;
+  final String? errorMessage;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Inspection({
     required this.id,
+    required this.clientId,
     required this.workOrderId,
-    required this.comment,
-    required this.status,
+    required this.observation,
+    this.condition,
     this.photoPath,
     this.latitude,
     this.longitude,
+    required this.capturedAt,
+    required this.status,
+    this.serverId,
+    this.errorMessage,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1280,9 +1413,12 @@ class Inspection extends DataClass implements Insertable<Inspection> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['client_id'] = Variable<String>(clientId);
     map['work_order_id'] = Variable<String>(workOrderId);
-    map['comment'] = Variable<String>(comment);
-    map['status'] = Variable<String>(status);
+    map['observation'] = Variable<String>(observation);
+    if (!nullToAbsent || condition != null) {
+      map['condition'] = Variable<String>(condition);
+    }
     if (!nullToAbsent || photoPath != null) {
       map['photo_path'] = Variable<String>(photoPath);
     }
@@ -1292,6 +1428,14 @@ class Inspection extends DataClass implements Insertable<Inspection> {
     if (!nullToAbsent || longitude != null) {
       map['longitude'] = Variable<double>(longitude);
     }
+    map['captured_at'] = Variable<DateTime>(capturedAt);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<String>(serverId);
+    }
+    if (!nullToAbsent || errorMessage != null) {
+      map['error_message'] = Variable<String>(errorMessage);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -1300,9 +1444,12 @@ class Inspection extends DataClass implements Insertable<Inspection> {
   InspectionsCompanion toCompanion(bool nullToAbsent) {
     return InspectionsCompanion(
       id: Value(id),
+      clientId: Value(clientId),
       workOrderId: Value(workOrderId),
-      comment: Value(comment),
-      status: Value(status),
+      observation: Value(observation),
+      condition: condition == null && nullToAbsent
+          ? const Value.absent()
+          : Value(condition),
       photoPath: photoPath == null && nullToAbsent
           ? const Value.absent()
           : Value(photoPath),
@@ -1312,6 +1459,14 @@ class Inspection extends DataClass implements Insertable<Inspection> {
       longitude: longitude == null && nullToAbsent
           ? const Value.absent()
           : Value(longitude),
+      capturedAt: Value(capturedAt),
+      status: Value(status),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      errorMessage: errorMessage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorMessage),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -1324,12 +1479,17 @@ class Inspection extends DataClass implements Insertable<Inspection> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Inspection(
       id: serializer.fromJson<int>(json['id']),
+      clientId: serializer.fromJson<String>(json['clientId']),
       workOrderId: serializer.fromJson<String>(json['workOrderId']),
-      comment: serializer.fromJson<String>(json['comment']),
-      status: serializer.fromJson<String>(json['status']),
+      observation: serializer.fromJson<String>(json['observation']),
+      condition: serializer.fromJson<String?>(json['condition']),
       photoPath: serializer.fromJson<String?>(json['photoPath']),
       latitude: serializer.fromJson<double?>(json['latitude']),
       longitude: serializer.fromJson<double?>(json['longitude']),
+      capturedAt: serializer.fromJson<DateTime>(json['capturedAt']),
+      status: serializer.fromJson<String>(json['status']),
+      serverId: serializer.fromJson<String?>(json['serverId']),
+      errorMessage: serializer.fromJson<String?>(json['errorMessage']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -1339,12 +1499,17 @@ class Inspection extends DataClass implements Insertable<Inspection> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'clientId': serializer.toJson<String>(clientId),
       'workOrderId': serializer.toJson<String>(workOrderId),
-      'comment': serializer.toJson<String>(comment),
-      'status': serializer.toJson<String>(status),
+      'observation': serializer.toJson<String>(observation),
+      'condition': serializer.toJson<String?>(condition),
       'photoPath': serializer.toJson<String?>(photoPath),
       'latitude': serializer.toJson<double?>(latitude),
       'longitude': serializer.toJson<double?>(longitude),
+      'capturedAt': serializer.toJson<DateTime>(capturedAt),
+      'status': serializer.toJson<String>(status),
+      'serverId': serializer.toJson<String?>(serverId),
+      'errorMessage': serializer.toJson<String?>(errorMessage),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -1352,36 +1517,57 @@ class Inspection extends DataClass implements Insertable<Inspection> {
 
   Inspection copyWith({
     int? id,
+    String? clientId,
     String? workOrderId,
-    String? comment,
-    String? status,
+    String? observation,
+    Value<String?> condition = const Value.absent(),
     Value<String?> photoPath = const Value.absent(),
     Value<double?> latitude = const Value.absent(),
     Value<double?> longitude = const Value.absent(),
+    DateTime? capturedAt,
+    String? status,
+    Value<String?> serverId = const Value.absent(),
+    Value<String?> errorMessage = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Inspection(
     id: id ?? this.id,
+    clientId: clientId ?? this.clientId,
     workOrderId: workOrderId ?? this.workOrderId,
-    comment: comment ?? this.comment,
-    status: status ?? this.status,
+    observation: observation ?? this.observation,
+    condition: condition.present ? condition.value : this.condition,
     photoPath: photoPath.present ? photoPath.value : this.photoPath,
     latitude: latitude.present ? latitude.value : this.latitude,
     longitude: longitude.present ? longitude.value : this.longitude,
+    capturedAt: capturedAt ?? this.capturedAt,
+    status: status ?? this.status,
+    serverId: serverId.present ? serverId.value : this.serverId,
+    errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
   Inspection copyWithCompanion(InspectionsCompanion data) {
     return Inspection(
       id: data.id.present ? data.id.value : this.id,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
       workOrderId: data.workOrderId.present
           ? data.workOrderId.value
           : this.workOrderId,
-      comment: data.comment.present ? data.comment.value : this.comment,
-      status: data.status.present ? data.status.value : this.status,
+      observation: data.observation.present
+          ? data.observation.value
+          : this.observation,
+      condition: data.condition.present ? data.condition.value : this.condition,
       photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
       latitude: data.latitude.present ? data.latitude.value : this.latitude,
       longitude: data.longitude.present ? data.longitude.value : this.longitude,
+      capturedAt: data.capturedAt.present
+          ? data.capturedAt.value
+          : this.capturedAt,
+      status: data.status.present ? data.status.value : this.status,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      errorMessage: data.errorMessage.present
+          ? data.errorMessage.value
+          : this.errorMessage,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1391,12 +1577,17 @@ class Inspection extends DataClass implements Insertable<Inspection> {
   String toString() {
     return (StringBuffer('Inspection(')
           ..write('id: $id, ')
+          ..write('clientId: $clientId, ')
           ..write('workOrderId: $workOrderId, ')
-          ..write('comment: $comment, ')
-          ..write('status: $status, ')
+          ..write('observation: $observation, ')
+          ..write('condition: $condition, ')
           ..write('photoPath: $photoPath, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
+          ..write('capturedAt: $capturedAt, ')
+          ..write('status: $status, ')
+          ..write('serverId: $serverId, ')
+          ..write('errorMessage: $errorMessage, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1406,12 +1597,17 @@ class Inspection extends DataClass implements Insertable<Inspection> {
   @override
   int get hashCode => Object.hash(
     id,
+    clientId,
     workOrderId,
-    comment,
-    status,
+    observation,
+    condition,
     photoPath,
     latitude,
     longitude,
+    capturedAt,
+    status,
+    serverId,
+    errorMessage,
     createdAt,
     updatedAt,
   );
@@ -1420,71 +1616,103 @@ class Inspection extends DataClass implements Insertable<Inspection> {
       identical(this, other) ||
       (other is Inspection &&
           other.id == this.id &&
+          other.clientId == this.clientId &&
           other.workOrderId == this.workOrderId &&
-          other.comment == this.comment &&
-          other.status == this.status &&
+          other.observation == this.observation &&
+          other.condition == this.condition &&
           other.photoPath == this.photoPath &&
           other.latitude == this.latitude &&
           other.longitude == this.longitude &&
+          other.capturedAt == this.capturedAt &&
+          other.status == this.status &&
+          other.serverId == this.serverId &&
+          other.errorMessage == this.errorMessage &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
 
 class InspectionsCompanion extends UpdateCompanion<Inspection> {
   final Value<int> id;
+  final Value<String> clientId;
   final Value<String> workOrderId;
-  final Value<String> comment;
-  final Value<String> status;
+  final Value<String> observation;
+  final Value<String?> condition;
   final Value<String?> photoPath;
   final Value<double?> latitude;
   final Value<double?> longitude;
+  final Value<DateTime> capturedAt;
+  final Value<String> status;
+  final Value<String?> serverId;
+  final Value<String?> errorMessage;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const InspectionsCompanion({
     this.id = const Value.absent(),
+    this.clientId = const Value.absent(),
     this.workOrderId = const Value.absent(),
-    this.comment = const Value.absent(),
-    this.status = const Value.absent(),
+    this.observation = const Value.absent(),
+    this.condition = const Value.absent(),
     this.photoPath = const Value.absent(),
     this.latitude = const Value.absent(),
     this.longitude = const Value.absent(),
+    this.capturedAt = const Value.absent(),
+    this.status = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.errorMessage = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
   InspectionsCompanion.insert({
     this.id = const Value.absent(),
+    required String clientId,
     required String workOrderId,
-    required String comment,
-    required String status,
+    required String observation,
+    this.condition = const Value.absent(),
     this.photoPath = const Value.absent(),
     this.latitude = const Value.absent(),
     this.longitude = const Value.absent(),
+    required DateTime capturedAt,
+    required String status,
+    this.serverId = const Value.absent(),
+    this.errorMessage = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
-  }) : workOrderId = Value(workOrderId),
-       comment = Value(comment),
+  }) : clientId = Value(clientId),
+       workOrderId = Value(workOrderId),
+       observation = Value(observation),
+       capturedAt = Value(capturedAt),
        status = Value(status),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<Inspection> custom({
     Expression<int>? id,
+    Expression<String>? clientId,
     Expression<String>? workOrderId,
-    Expression<String>? comment,
-    Expression<String>? status,
+    Expression<String>? observation,
+    Expression<String>? condition,
     Expression<String>? photoPath,
     Expression<double>? latitude,
     Expression<double>? longitude,
+    Expression<DateTime>? capturedAt,
+    Expression<String>? status,
+    Expression<String>? serverId,
+    Expression<String>? errorMessage,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (clientId != null) 'client_id': clientId,
       if (workOrderId != null) 'work_order_id': workOrderId,
-      if (comment != null) 'comment': comment,
-      if (status != null) 'status': status,
+      if (observation != null) 'observation': observation,
+      if (condition != null) 'condition': condition,
       if (photoPath != null) 'photo_path': photoPath,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      if (capturedAt != null) 'captured_at': capturedAt,
+      if (status != null) 'status': status,
+      if (serverId != null) 'server_id': serverId,
+      if (errorMessage != null) 'error_message': errorMessage,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -1492,23 +1720,33 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
 
   InspectionsCompanion copyWith({
     Value<int>? id,
+    Value<String>? clientId,
     Value<String>? workOrderId,
-    Value<String>? comment,
-    Value<String>? status,
+    Value<String>? observation,
+    Value<String?>? condition,
     Value<String?>? photoPath,
     Value<double?>? latitude,
     Value<double?>? longitude,
+    Value<DateTime>? capturedAt,
+    Value<String>? status,
+    Value<String?>? serverId,
+    Value<String?>? errorMessage,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
     return InspectionsCompanion(
       id: id ?? this.id,
+      clientId: clientId ?? this.clientId,
       workOrderId: workOrderId ?? this.workOrderId,
-      comment: comment ?? this.comment,
-      status: status ?? this.status,
+      observation: observation ?? this.observation,
+      condition: condition ?? this.condition,
       photoPath: photoPath ?? this.photoPath,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      capturedAt: capturedAt ?? this.capturedAt,
+      status: status ?? this.status,
+      serverId: serverId ?? this.serverId,
+      errorMessage: errorMessage ?? this.errorMessage,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -1520,14 +1758,17 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
     if (workOrderId.present) {
       map['work_order_id'] = Variable<String>(workOrderId.value);
     }
-    if (comment.present) {
-      map['comment'] = Variable<String>(comment.value);
+    if (observation.present) {
+      map['observation'] = Variable<String>(observation.value);
     }
-    if (status.present) {
-      map['status'] = Variable<String>(status.value);
+    if (condition.present) {
+      map['condition'] = Variable<String>(condition.value);
     }
     if (photoPath.present) {
       map['photo_path'] = Variable<String>(photoPath.value);
@@ -1537,6 +1778,18 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
     }
     if (longitude.present) {
       map['longitude'] = Variable<double>(longitude.value);
+    }
+    if (capturedAt.present) {
+      map['captured_at'] = Variable<DateTime>(capturedAt.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<String>(serverId.value);
+    }
+    if (errorMessage.present) {
+      map['error_message'] = Variable<String>(errorMessage.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -1551,12 +1804,17 @@ class InspectionsCompanion extends UpdateCompanion<Inspection> {
   String toString() {
     return (StringBuffer('InspectionsCompanion(')
           ..write('id: $id, ')
+          ..write('clientId: $clientId, ')
           ..write('workOrderId: $workOrderId, ')
-          ..write('comment: $comment, ')
-          ..write('status: $status, ')
+          ..write('observation: $observation, ')
+          ..write('condition: $condition, ')
           ..write('photoPath: $photoPath, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
+          ..write('capturedAt: $capturedAt, ')
+          ..write('status: $status, ')
+          ..write('serverId: $serverId, ')
+          ..write('errorMessage: $errorMessage, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2092,24 +2350,34 @@ typedef $$WorkOrdersTableProcessedTableManager =
 typedef $$InspectionsTableCreateCompanionBuilder =
     InspectionsCompanion Function({
       Value<int> id,
+      required String clientId,
       required String workOrderId,
-      required String comment,
-      required String status,
+      required String observation,
+      Value<String?> condition,
       Value<String?> photoPath,
       Value<double?> latitude,
       Value<double?> longitude,
+      required DateTime capturedAt,
+      required String status,
+      Value<String?> serverId,
+      Value<String?> errorMessage,
       required DateTime createdAt,
       required DateTime updatedAt,
     });
 typedef $$InspectionsTableUpdateCompanionBuilder =
     InspectionsCompanion Function({
       Value<int> id,
+      Value<String> clientId,
       Value<String> workOrderId,
-      Value<String> comment,
-      Value<String> status,
+      Value<String> observation,
+      Value<String?> condition,
       Value<String?> photoPath,
       Value<double?> latitude,
       Value<double?> longitude,
+      Value<DateTime> capturedAt,
+      Value<String> status,
+      Value<String?> serverId,
+      Value<String?> errorMessage,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -2128,18 +2396,23 @@ class $$InspectionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get workOrderId => $composableBuilder(
     column: $table.workOrderId,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get comment => $composableBuilder(
-    column: $table.comment,
+  ColumnFilters<String> get observation => $composableBuilder(
+    column: $table.observation,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get status => $composableBuilder(
-    column: $table.status,
+  ColumnFilters<String> get condition => $composableBuilder(
+    column: $table.condition,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2155,6 +2428,26 @@ class $$InspectionsTableFilterComposer
 
   ColumnFilters<double> get longitude => $composableBuilder(
     column: $table.longitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2183,18 +2476,23 @@ class $$InspectionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get workOrderId => $composableBuilder(
     column: $table.workOrderId,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get comment => $composableBuilder(
-    column: $table.comment,
+  ColumnOrderings<String> get observation => $composableBuilder(
+    column: $table.observation,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
+  ColumnOrderings<String> get condition => $composableBuilder(
+    column: $table.condition,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -2210,6 +2508,26 @@ class $$InspectionsTableOrderingComposer
 
   ColumnOrderings<double> get longitude => $composableBuilder(
     column: $table.longitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -2236,16 +2554,21 @@ class $$InspectionsTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
   GeneratedColumn<String> get workOrderId => $composableBuilder(
     column: $table.workOrderId,
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get comment =>
-      $composableBuilder(column: $table.comment, builder: (column) => column);
+  GeneratedColumn<String> get observation => $composableBuilder(
+    column: $table.observation,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
+  GeneratedColumn<String> get condition =>
+      $composableBuilder(column: $table.condition, builder: (column) => column);
 
   GeneratedColumn<String> get photoPath =>
       $composableBuilder(column: $table.photoPath, builder: (column) => column);
@@ -2255,6 +2578,22 @@ class $$InspectionsTableAnnotationComposer
 
   GeneratedColumn<double> get longitude =>
       $composableBuilder(column: $table.longitude, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -2295,44 +2634,64 @@ class $$InspectionsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> clientId = const Value.absent(),
                 Value<String> workOrderId = const Value.absent(),
-                Value<String> comment = const Value.absent(),
-                Value<String> status = const Value.absent(),
+                Value<String> observation = const Value.absent(),
+                Value<String?> condition = const Value.absent(),
                 Value<String?> photoPath = const Value.absent(),
                 Value<double?> latitude = const Value.absent(),
                 Value<double?> longitude = const Value.absent(),
+                Value<DateTime> capturedAt = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> serverId = const Value.absent(),
+                Value<String?> errorMessage = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => InspectionsCompanion(
                 id: id,
+                clientId: clientId,
                 workOrderId: workOrderId,
-                comment: comment,
-                status: status,
+                observation: observation,
+                condition: condition,
                 photoPath: photoPath,
                 latitude: latitude,
                 longitude: longitude,
+                capturedAt: capturedAt,
+                status: status,
+                serverId: serverId,
+                errorMessage: errorMessage,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                required String clientId,
                 required String workOrderId,
-                required String comment,
-                required String status,
+                required String observation,
+                Value<String?> condition = const Value.absent(),
                 Value<String?> photoPath = const Value.absent(),
                 Value<double?> latitude = const Value.absent(),
                 Value<double?> longitude = const Value.absent(),
+                required DateTime capturedAt,
+                required String status,
+                Value<String?> serverId = const Value.absent(),
+                Value<String?> errorMessage = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
               }) => InspectionsCompanion.insert(
                 id: id,
+                clientId: clientId,
                 workOrderId: workOrderId,
-                comment: comment,
-                status: status,
+                observation: observation,
+                condition: condition,
                 photoPath: photoPath,
                 latitude: latitude,
                 longitude: longitude,
+                capturedAt: capturedAt,
+                status: status,
+                serverId: serverId,
+                errorMessage: errorMessage,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),

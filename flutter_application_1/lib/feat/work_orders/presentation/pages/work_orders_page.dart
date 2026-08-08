@@ -5,6 +5,8 @@ import 'package:flutter_application_1/core/database/app_database.dart'
 import 'package:flutter_application_1/core/database/dao/work_order_dao.dart';
 import 'package:flutter_application_1/core/network/api_client.dart';
 import 'package:flutter_application_1/core/storage/token_storage.dart';
+import 'package:flutter_application_1/feat/inspection/presentation/pages/inspection_form_page.dart';
+import 'package:flutter_application_1/feat/inspection/presentation/pages/inspections_history_page.dart';
 import 'package:flutter_application_1/feat/home/presentation/pages/home_page.dart';
 import 'package:flutter_application_1/feat/home/presentation/widgets/home_dashboard.dart';
 import 'package:flutter_application_1/feat/work_orders/data/models/work_order.dart';
@@ -115,12 +117,6 @@ class _WorkOrdersPageState extends State<WorkOrdersPage> {
     }
   }
 
-  void _showUnavailable(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
-
   void _goToHome() {
     Navigator.pushReplacement(
       context,
@@ -130,6 +126,35 @@ class _WorkOrdersPageState extends State<WorkOrdersPage> {
           onLogout: widget.onLogout,
           onSessionInvalid: widget.onSessionInvalid,
           database: widget.database,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openInspection(WorkOrder workOrder) async {
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InspectionFormPage(
+          database: widget.database,
+          workOrderId: workOrder.id,
+          workOrderCode: workOrder.code,
+          workOrderTitle: workOrder.title,
+          onSessionInvalid: widget.onSessionInvalid,
+        ),
+      ),
+    );
+  }
+
+  void _goToHistory() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InspectionsHistoryPage(
+          database: widget.database,
+          onLogout: widget.onLogout,
+          onSessionInvalid: widget.onSessionInvalid,
+          onNavigateHome: _goToHome,
         ),
       ),
     );
@@ -180,11 +205,7 @@ class _WorkOrdersPageState extends State<WorkOrdersPage> {
 
           return WorkOrderCard(
             workOrder: workOrder,
-            onPressed: () {
-              _showUnavailable(
-                'Os detalhes da ordem ainda não estão disponíveis.',
-              );
-            },
+            onPressed: () => _openInspection(workOrder),
           );
         },
       ),
@@ -280,7 +301,7 @@ class _WorkOrdersPageState extends State<WorkOrdersPage> {
           }
 
           if (index == 2) {
-            _showUnavailable('O histórico ainda não está disponível.');
+            _goToHistory();
           }
         },
       ),

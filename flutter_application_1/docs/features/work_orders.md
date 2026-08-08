@@ -92,8 +92,9 @@ status.
 ## Navegação e sessão
 
 Na Home, **Ordens** abre `WorkOrdersPage`; na lista, **Início** volta à Home.
-A opção já selecionada mantém a página atual. Como Histórico ainda não existe,
-ela exibe um `SnackBar`. O menu da lista oferece logout.
+A ação de cada card abre o formulário de inspeção para a ordem selecionada.
+A opção já selecionada mantém a página atual. Histórico abre a lista local de
+inspeções. O menu da lista oferece logout.
 
 Home e Work Orders reutilizam `AppNavigationBar`, mantendo os mesmos destinos e
 permitindo que cada página controle apenas o índice selecionado e a navegação.
@@ -103,7 +104,7 @@ Se não houver token ou o endpoint responder HTTP 401, a página chama
 
 ## Limitações atuais
 
-- A tela de detalhes/início da ordem ainda não foi implementada.
-- Histórico ainda não possui página.
+- O formulário usa os dados já carregados da ordem; `GET /work-orders/:id` ainda
+  não é consumido separadamente.
 - Uma nova entrada tenta atualizar pela API e usa o cache somente quando a API
   está inacessível por conexão ou timeout.

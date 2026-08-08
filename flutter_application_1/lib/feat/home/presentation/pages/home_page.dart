@@ -1,9 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/core/database/app_database.dart';
+import 'package:flutter_application_1/core/database/dao/inspection_dao.dart';
 import 'package:flutter_application_1/core/database/dao/work_order_dao.dart';
+import 'package:flutter_application_1/core/network/connectivity_service.dart';
 import 'package:flutter_application_1/core/network/api_client.dart';
 import 'package:flutter_application_1/core/storage/token_storage.dart';
+import 'package:flutter_application_1/feat/inspection/presentation/pages/inspections_history_page.dart';
+import 'package:flutter_application_1/feat/inspection/services/inspection_service.dart';
+import 'package:flutter_application_1/feat/inspection/services/inspection_sync_service.dart';
 import 'package:flutter_application_1/feat/home/data/models/home_availability.dart';
 import 'package:flutter_application_1/feat/home/data/models/home_summary.dart';
 import 'package:flutter_application_1/feat/home/presentation/widgets/home_dashboard.dart';
@@ -31,12 +38,18 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TokenStorage _tokenStorage = const TokenStorage();
+  final ConnectivityService _connectivityService = ConnectivityService();
   late final WorkOrderService _workOrderService;
+  late final InspectionDao _inspectionDao;
+  late final InspectionSyncService _inspectionSyncService;
+  StreamSubscription<bool>? _connectivitySubscription;
+  bool? _wasConnected;
 
   HomeSummary? _summary;
   HomeAvailability _availability = const HomeAvailability.checking();
   String? _errorMessage;
   bool _isLoading = true;
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -45,7 +58,30 @@ class _HomePageState extends State<HomePage> {
       ApiClient(),
       WorkOrderDao(widget.database),
     );
+    _inspectionDao = InspectionDao(widget.database);
+    _inspectionSyncService = InspectionSyncService(
+      _inspectionDao,
+      InspectionService(ApiClient()),
+    );
     _loadSummary();
+    _listenForReconnection();
+  }
+
+  Future<void> _listenForReconnection() async {
+    _wasConnected = await _connectivityService.hasConnection();
+    _connectivitySubscription = _connectivityService.connectionChanges.listen((
+      connected,
+    ) {
+      final recovered = _wasConnected == false && connected;
+      _wasConnected = connected;
+      if (recovered) unawaited(_syncInspections(showFeedback: false));
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadSummary() async {
@@ -68,12 +104,23 @@ class _HomePageState extends State<HomePage> {
         accessToken: token,
       );
       final openOrders = workOrders.where((order) => order.isOpen).length;
+      final inspections = await _inspectionDao.getAllInspections();
+      final pendingInspections = inspections
+          .where((item) => item.status == 'pending')
+          .length;
+      final failedSyncs = inspections
+          .where((item) => item.status == 'failed')
+          .length;
       final isUsingCache =
           _workOrderService.lastDataSource == WorkOrderDataSource.cache;
 
       if (mounted) {
         setState(() {
-          _summary = HomeSummary(openOrders: openOrders);
+          _summary = HomeSummary(
+            openOrders: openOrders,
+            pendingInspections: pendingInspections,
+            failedSyncs: failedSyncs,
+          );
           _availability = HomeAvailability(
             state: isUsingCache
                 ? HomeAvailabilityState.offline
@@ -143,6 +190,50 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _goToHistory() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InspectionsHistoryPage(
+          database: widget.database,
+          onLogout: widget.onLogout,
+          onSessionInvalid: widget.onSessionInvalid,
+          onNavigateOrders: _goToWorkOrders,
+        ),
+      ),
+    ).then((_) => _loadSummary());
+  }
+
+  Future<void> _syncInspections({bool showFeedback = true}) async {
+    if (_isSyncing || _inspectionSyncService.isSyncing) return;
+    final token = await _tokenStorage.getToken();
+    if (token == null || token.isEmpty) {
+      await widget.onSessionInvalid();
+      return;
+    }
+    if (mounted) setState(() => _isSyncing = true);
+    try {
+      final result = await _inspectionSyncService.syncPendingInspections(
+        accessToken: token,
+      );
+      if (showFeedback && mounted) {
+        final message = result.skipped
+            ? 'Já existe uma sincronização em andamento.'
+            : '${result.synced} sincronizada(s), ${result.failed} falha(s).';
+        _showUnavailable(message);
+      }
+      await _loadSummary();
+    } on InspectionException catch (error) {
+      if (error.shouldClearSession) {
+        await widget.onSessionInvalid();
+        return;
+      }
+      if (showFeedback) _showUnavailable(error.message);
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -181,12 +272,14 @@ class _HomePageState extends State<HomePage> {
               errorMessage: _errorMessage,
               onRetry: _loadSummary,
               onViewOrders: _goToWorkOrders,
-              onPendingInspections: () =>
-                  _showUnavailable('As inspeções ainda não estão disponíveis.'),
-              onFailedSyncs: () => _showUnavailable(
-                'A fila de sincronização ainda não está disponível.',
-              ),
-              onSync: null,
+              onPendingInspections: _goToHistory,
+              onFailedSyncs: _goToHistory,
+              onSync:
+                  _isSyncing ||
+                      ((_summary?.pendingInspections ?? 0) == 0 &&
+                          (_summary?.failedSyncs ?? 0) == 0)
+                  ? null
+                  : () => _syncInspections(),
             ),
           ),
         ),
@@ -199,7 +292,7 @@ class _HomePageState extends State<HomePage> {
             _goToWorkOrders();
           }
           if (index == 2) {
-            _showUnavailable('O histórico ainda não está disponível.');
+            _goToHistory();
           }
         },
       ),

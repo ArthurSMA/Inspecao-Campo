@@ -69,18 +69,14 @@ Offline: SQLite → resumo/interface
 
 - Nome do usuário: real, recebido do `AuthGate`.
 - Ordens abertas: real, calculado a partir de `GET /work-orders`.
-- Inspeções pendentes: zero temporário; ainda não há banco local de inspeções.
-- Falhas de sincronização: zero temporário; ainda não há fila local.
+- Inspeções pendentes: calculadas do SQLite.
+- Falhas de sincronização: calculadas do SQLite.
 
 ## Sincronização
 
-Não existe fila de sincronização nem valor persistido de última sincronização.
-Por isso:
-
-- o banner mostra “Nenhuma sincronização realizada” quando online;
-- o botão mostra “Nenhum item para sincronizar” e fica desabilitado;
-- nenhuma sincronização fictícia é executada;
-- os estados `pending` e `failed` serão conectados ao banco local futuramente.
+O botão da Home envia itens `pending` e `failed` pela fila local. Uma transição
+offline → online também dispara a mesma fila, sem tratar conectividade como prova
+de disponibilidade da API. O horário da última sincronização ainda não é salvo.
 
 ## Estrutura de arquivos
 
@@ -128,12 +124,10 @@ lib/
 - Não há login offline; o primeiro login exige a API.
 - Uma sessão previamente autenticada pode ser restaurada offline usando token e
   usuário local. HTTP 401 continua invalidando a sessão.
-- Não há banco de inspeções, fila de sincronização ou última sincronização salva.
-- O detalhe de uma ordem e o Histórico ainda não possuem páginas.
+- A última sincronização ainda não é persistida.
+- O sync automático ocorre somente enquanto a aplicação está ativa.
 
 ## Próximos passos
 
-- Expandir a persistência local para inspeções e status de sincronização.
-- Implementar o detalhe de ordens.
-- Conectar inspeções pendentes e falhas ao banco local.
-- Implementar fila e persistência da última sincronização.
+- Persistir o horário da última sincronização.
+- Avaliar conciliação opcional com `GET /inspections`.

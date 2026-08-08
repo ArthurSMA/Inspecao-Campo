@@ -18,15 +18,63 @@ class InspectionDao extends DatabaseAccessor<AppDatabase>
     return select(inspections).get();
   }
 
-  Future<List<Inspection>> getPendingInspections() {
+  Future<Inspection?> getInspectionByClientId(String clientId) {
     return (select(
       inspections,
-    )..where((table) => table.status.equals('pending'))).get();
+    )..where((table) => table.clientId.equals(clientId))).getSingleOrNull();
   }
 
-  Future<void> markAsSynced(int id) async {
-    await (update(inspections)..where((table) => table.id.equals(id))).write(
-      const InspectionsCompanion(status: Value('synced')),
+  Future<Inspection?> getDraftForWorkOrder(String workOrderId) {
+    return (select(inspections)
+          ..where(
+            (table) =>
+                table.workOrderId.equals(workOrderId) &
+                table.status.equals('draft'),
+          )
+          ..orderBy([(table) => OrderingTerm.desc(table.updatedAt)]))
+        .getSingleOrNull();
+  }
+
+  Future<List<Inspection>> getPendingAndFailed() {
+    return (select(
+      inspections,
+    )..where((table) => table.status.isIn(['pending', 'failed']))).get();
+  }
+
+  Future<void> markAsPending(String clientId) async {
+    await (update(
+      inspections,
+    )..where((table) => table.clientId.equals(clientId))).write(
+      InspectionsCompanion(
+        status: const Value('pending'),
+        errorMessage: const Value(null),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> markAsSynced(String clientId, String serverId) async {
+    await (update(
+      inspections,
+    )..where((table) => table.clientId.equals(clientId))).write(
+      InspectionsCompanion(
+        status: const Value('synced'),
+        serverId: Value(serverId),
+        errorMessage: const Value(null),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> markAsFailed(String clientId, String message) async {
+    await (update(
+      inspections,
+    )..where((table) => table.clientId.equals(clientId))).write(
+      InspectionsCompanion(
+        status: const Value('failed'),
+        errorMessage: Value(message),
+        updatedAt: Value(DateTime.now()),
+      ),
     );
   }
 

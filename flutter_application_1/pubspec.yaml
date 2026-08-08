@@ -41,6 +41,9 @@ dependencies:
   sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.6
   path: ^1.9.1
+  uuid: ^4.6.0
+  image_picker: ^1.2.3
+  geolocator: ^14.0.3
 
 dev_dependencies:
   flutter_test:
